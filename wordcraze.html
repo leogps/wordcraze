@@ -1,0 +1,154 @@
+<!--
+ @Author: leogps [Paul Gundarapu] (https://github.com/leogps)
+ 
+ @License: http://creativecommons.org/licenses/by/4.0/legalcode
+ -->
+<html>
+	<head>
+        <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+		<script src="wordcraze.js"></script>
+        <title>Word Craze - by leogps</title>
+	</head>
+    
+    <body>
+        <h3>Word Craze</h3>
+        <div style="width=30%">
+            <div>Three Lettered Words : <span id="noOf3s"></span></div>
+            <div>Four Lettered Words : <span id="noOf4s"></span></div>
+            <div>Five Lettered Words : <span id="noOf5s"></span></div>
+            <div id="messageBox">&nbsp;</div>
+            <br/>
+            <div>Time: <span class="min">00</span>:<span class="sec">00</span></div>
+            <br/>
+            <div>Score: <span id="score">0</span></div>
+            
+            <table id="theTable">
+                <tr id="buttonRow">
+                    <td>
+                        <input type="button" value="" />
+                    </td>
+                    
+                    <td>
+                        <input type="button" value="" />
+                    </td>
+                    
+                    <td>
+                        <input type="button" value="" />
+                    </td>
+                    
+                    <td>
+                        <input type="button" value="" />
+                    </td>
+                    
+                    <td>
+                        <input type="button" value="" />
+                    </td>
+                </tr>
+                
+                <tr id="inputRow">
+                    <td>
+                        <input type="text" maxlength="1" />
+                    </td>
+                    
+                    <td>
+                        <input type="text" maxlength="1" />
+                    </td>
+                    
+                    <td>
+                        <input type="text" maxlength="1" />
+                    </td>
+                    
+                    <td>
+                        <input type="text" maxlength="1" />
+                    </td>
+                    
+                    <td>
+                        <input type="text" maxlength="1" />
+                    </td>
+                </tr>
+                
+                <tr>
+                    <td colspan="5">
+                        <input id="submitButton" type="button" value="submit"/>
+                        <input id="clearButton" type="button" value="clear"/>
+                    </td>
+                </tr>
+                
+            </table>
+        </div>
+        <div>
+            <p>
+            <strong>Instructions:</strong> <br/>
+            Word Craze is a classic timed anagram solver game. A random five lettered word is selected and its letters are jumbled and the gamer is presented to find the dictionary words from it.
+            <br/>
+            1. Three Lettered words: The number of three lettered words that are recognized from the word.
+            <br/>
+            2. Four Lettered words: The number of four lettered words that are recognized from the word.
+            <br/>
+            3. Five Lettered words: The number of five lettered words that are recognized from the word.
+            <br/>
+            
+            <br/>
+            The game is over if the gamer is not able to solve atleast one of the categories above (make 'em zero) before time runs out.
+            
+            <br/>
+            The game transitions to the next word after the time runs out if atleast one of the categories is fully solved or if all the categories are solved, the game transitions to the next word immediately.
+
+            <br/>
+            <br/>
+            Cheat if you code in js! Solve if you are good with anagrams!!
+            <br/>
+            
+            <br/>
+            Peace, Paul.
+            </p>
+        </div>
+    </body>
+
+</html>
+
+<script>
+    // Disabling input key events.
+    jQuery("tr#inputRow input")
+        .on("keyup, keydown",
+            function(e){
+                e.preventDefault();
+    })
+</script>
+
+<style>
+    table#theTable {
+        margin-left: 0;
+        margin-right: 0;
+        border: 1px solid black;
+    }
+table#theTable tr td {
+    border: 1px solid black;
+}
+
+table#theTable tr#inputRow td input {
+    width: 30px;
+    height : 30px;
+}
+
+table#theTable tr#buttonRow td input {
+    width: 30px;
+    height : 30px;
+}
+
+.red-text {
+    color : red;
+}
+
+.green-text {
+    color: green;
+}
+.yellow-bg {
+    background: yellow;
+}
+#buttonRow input[type='button'] {
+    background : silver;
+}
+</style>
+
+
