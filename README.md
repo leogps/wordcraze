@@ -16,3 +16,5 @@ A random five lettered word is selected and its letters are jumbled and the play
 [License](http://creativecommons.org/licenses/by/4.0/legalcode)
 
 [License summary](http://creativecommons.org/licenses/by/4.0/)
+
+[See it in action here](http://leogps.github.io/wordcraze/)
