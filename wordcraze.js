@@ -198,20 +198,31 @@ var wordcraze = {
         wordcraze.CACHE.$minSpan = jQuery("span.min");
         wordcraze.CACHE.$secSpan = jQuery("span.sec");
         
+        wordcraze.dictionary.isBuilt = false;
         var threeLWs = wordcraze.dictionary.getThreeLetteredWords();
         for(var i in threeLWs ) {
-            wordcraze.CACHE.threeLetteredWordMap[threeLWs[i]] = true;
+            if(typeof i === "string") {
+                wordcraze.CACHE.threeLetteredWordMap[threeLWs[i]] = true;
+                wordcraze.dictionary.addWord(threeLWs[i]);
+            }
         }
         
         var fourLWs = wordcraze.dictionary.getFourLetteredWords();
         for(var i in fourLWs ) {
-            wordcraze.CACHE.fourLetteredWordMap[fourLWs[i]] = true;
+            if(typeof i === "string") {
+                wordcraze.CACHE.fourLetteredWordMap[fourLWs[i]] = true;
+                wordcraze.dictionary.addWord(fourLWs[i]);
+            }
         }
         
         var fiveLWs = wordcraze.dictionary.getFiveLetteredWords();
         for(var i in fiveLWs ) {
-            wordcraze.CACHE.fiveLetteredWordMap[fiveLWs[i]] = true;
+            if(typeof i === "string") {
+                wordcraze.CACHE.fiveLetteredWordMap[fiveLWs[i]] = true;
+                wordcraze.dictionary.addWord(fiveLWs[i]);
+            }
         }
+        wordcraze.dictionary.isBuilt = true;
         
     },
     
@@ -596,7 +607,7 @@ var wordcraze = {
         * Generates permutations of the @param: word with the corresponding @param: wordLength and returns them in a list.
         * This takes generate all words approach and is not suitable to use with longer words.
         *
-        * @Note: Do not use a word of length 50, it will take some years to complete.
+        * @Note: Do not use a word of length 50, it will take a few years to complete.
         **/
         generatePermutations : function(word, wordLength) {
         
@@ -610,7 +621,7 @@ var wordcraze = {
         
             return generatedList;
         },
-    
+
         _doGeneratePermutations : function(word, generatedList, wordLength) {
             for(var i = 0; i < word.length; i++) {
                 wordcraze.permutator._doDoGeneratePermutations(word, [i], generatedList, wordLength);
@@ -641,6 +652,77 @@ var wordcraze = {
             }
             
         },
+
+        /**
+         * Generates words using the dictionary.
+         * <br/>
+         * i.e., This will not compute all the permutations of the word. Instead, when making the permutations of the word, it uses
+         * dictionary to lookup the partially permutated word and if the dictionary's index contains the word, only then continues
+         * with the word's further permuatation.
+         *
+         * E.g:
+         * Dict Index for word 'camel':
+         * ['c'] -> ['camel', 'candy', .....]
+         * ['ca'] -> ['camel', 'camera', ....]
+         * ['cam'] -> ['camel', 'camera', .....]
+         * ['came'] -> ['camel', 'camera', .....]
+         * ['camel'] -> ['camel', 'camels', .....]
+         *
+         * If @param word : camel
+         *
+         * When 'ml' is generated, it is looked up in the Dictionary index above and as there won't be any words with 'ml' in the index,
+         * subsequent permutations of mle, mlc, .... will not be traversed. This saves some serious computation.
+         *
+         *
+         * @param word
+         * @param wordLength
+         * @returns {Array}
+         */
+        generatePermutationsUsingDict : function(word, wordLength) {
+            if(isNaN(wordLength)) {
+                wordLength = word.length;
+            }
+
+            var generatedList = [];
+            wordcraze.permutator._doGeneratePermutationsUsingDict(word, generatedList, wordLength);
+            //console.log("Strings generated: " + generatedList.length);
+
+            return generatedList;
+        },
+
+        _doGeneratePermutationsUsingDict : function(word, generatedList, wordLength) {
+            for(var i = 0; i < word.length; i++) {
+                wordcraze.permutator._doDoGeneratePermutationsUsingDict(word, [i], generatedList, wordLength);
+            }
+        },
+
+        _doDoGeneratePermutationsUsingDict : function(word, fixedWordIndices, generatedList, wordLength) {
+            fixedWord = wordcraze.permutator._buildFixedWord(word, fixedWordIndices);
+            if(!wordcraze.dictionary.index[fixedWord]) {
+                return;
+            }
+
+            if(fixedWord.length == wordLength) {
+                generatedList.push(fixedWord);
+                //console.log("Generated word: " + fixedWord);
+                return;
+            }
+
+            for(var i = 0; i < word.length; i++) {
+                if(wordcraze.utils.notIn(i, fixedWordIndices)) {
+                    var newWordIndices = wordcraze.permutator._appendToArray(fixedWordIndices, i);
+
+                    if(newWordIndices.length <= wordLength) {
+                        wordcraze.permutator._doDoGeneratePermutationsUsingDict(word, newWordIndices, generatedList,
+                            wordLength);
+                    } else {
+                        break;
+                    }
+
+                }
+            }
+
+        },
         
         _appendToArray : function(fixedWordIndices, i) {
             var retArr = [];
@@ -668,6 +750,58 @@ var wordcraze = {
      *
     **/
     dictionary : {
+
+        /**
+         * This is the Dictionary's index. The basic indexing in the dictionary is extended to hold a complete index of the word.
+         * This index is updated every time wordcraze.dictionary.addWord(word) is invoked.
+         *
+         * <br/>
+         *
+         * When the wordcraze.dictionary.addWord('camel') is added, the index will be updated likewise:
+         * index['c'] -> [camel,...]
+         * index['ca'] -> [camel,...]
+         * index['cam'] -> [camel,...]
+         * index['came'] -> [camel,...]
+         * index['camel'] -> [camel,...]
+         *
+         * E.g: End result after processing all words with 'c'.
+         * Dict Index for word 'camel':
+         * ['c'] -> ['camel', 'candy', .....]
+         * ['ca'] -> ['camel', 'camera', ....]
+         * ['cam'] -> ['camel', 'camera', .....]
+         * ['came'] -> ['camel', 'camera', .....]
+         * ['camel'] -> ['camel', 'camels', .....]
+         */
+        index : [],
+
+        /**
+         * Represents state of the dictionary. Is it completely built or not?
+         */
+        isBuilt : false,
+
+        /**
+         * Indexes the word and adds it to the dictionary.
+         *
+         * @param word
+         */
+        addWord : function(word) {
+            // sanity check.
+            if(word && typeof word === "string") {
+                
+                // Indexing word with all lengths.
+                for(var i = 0; i <= word.length; i++) {
+                    
+                    var _indexWord = String(word.substring(0, i));
+                    //console.log(wordcraze.dictionary.index[_indexWord])
+                    
+                    if(!wordcraze.dictionary.index[_indexWord] ||
+                       typeof wordcraze.dictionary.index[_indexWord] != typeof Array()) {
+                        wordcraze.dictionary.index[_indexWord] = [];
+                    }
+                    wordcraze.dictionary.index[_indexWord].push(word);
+                }
+            }
+        },
         
         getThreeLetteredWords : function() {
             // Three Lettered words array. As it can be seen, this does not contain all the dictionary words for obvious reasons.
