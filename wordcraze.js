@@ -595,21 +595,104 @@ var wordcraze = {
         }
         
     },
-    
+
     /**
     * Permutator: Contains core logic to permutate the 5 lettered word into 5, 4 and 3 lettered words.
     *
     *
     **/
     permutator: {
+
+
+        Indices : function() {
+            this.add = function(index) {
+                this[String(index)] = true;
+            }
+
+            this.contains = function(index) {
+                return this[String(index)];
+            }
+
+            this.copy = function() {
+                var copy = {};
+                for(var k in this) {
+                    copy[k] = this[k];
+                }
+                return copy;
+            }
+        },
+
+        WordHolder : function(word, indices) {
+            this.word = word;
+            this.indices = indices;
+        },
+
+        /***
+         *
+         * Generates permutations of the @param: word with the corresponding @param: wordLength and returns them in a list.
+         * This takes generate all words approach and is not suitable to use with longer words.
+         *
+         * @Note Employs non-recursive fashion to generate the permutations.
+         **/
+        generatePermutations : function(word, length) {
+            var stack = [],
+                generatedWords = [],
+                generateWordValues = [];
+
+            if(!length || length < 1) {
+                length = word.length;
+            } else if(length > word.length) {
+                length = value.length;
+            }
+
+            for(var j = 0; j < word.length; j++) {
+                var indices = new wordcraze.permutator.Indices();
+                indices.add(j);
+                var letter = word.charAt(j);
+                var letteredWord = new wordcraze.permutator.WordHolder(letter, indices);
+                stack.push(letteredWord);
+
+                if(letter.length == length) {
+                    generatedWords.push(letteredWord);
+                    generateWordValues.push(letteredWord.word)
+                }
+
+                while(stack.length > 0) {
+                    var fixedWord = stack.pop();
+
+                    for(var i = 0; i < word.length; i++) {
+
+                        var fixedWordIndices = fixedWord.indices;
+                        if(!(fixedWordIndices.contains(i))) {
+                            var newWordVal = fixedWord.word + word.charAt(i);
+
+                            var copiedIndices = fixedWord.indices.copy();
+                            copiedIndices.add(i);
+
+                            var newWord = new wordcraze.permutator.WordHolder(newWordVal, copiedIndices);
+
+                            if(newWordVal.length == length) {
+                                generatedWords.push(newWord);
+                                generateWordValues.push(newWord.word)
+                            }
+
+                            stack.push(newWord);
+                        }
+                    }
+                }
+            }
+            return generateWordValues;
+        },
     
         /**
-        * Generates permutations of the @param: word with the corresponding @param: wordLength and returns them in a list.
+         * @deprecated Use the non-recursive function.
+        *
+         * Generates permutations of the @param: word with the corresponding @param: wordLength and returns them in a list.
         * This takes generate all words approach and is not suitable to use with longer words.
         *
         * @Note: Do not use a word of length 50, it will take a few years to complete.
         **/
-        generatePermutations : function(word, wordLength) {
+        generatePermutationsRecursive : function(word, wordLength) {
         
             if(isNaN(wordLength)) {
                 wordLength = word.length;
